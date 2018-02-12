@@ -1,7 +1,7 @@
 var barney = {
 	imgsrc: "../RPG-Game/assets/images/barney.jpg",
 	name: "Barney",
-	attackPower: 50,
+	attackPower: 5,
 	health: 100,
 	chosen: false,
 	id: 'hero-barney'
@@ -10,7 +10,7 @@ var barney = {
 var willyWonka = {
 	imgsrc: "../RPG-Game/assets/images/willywonka.jpg",
 	name: "Willy  Wonka",
-	attackPower: 50,
+	attackPower: 5,
 	health: 101,
 	chose: false,
 	id: 'hero-willywonka'
@@ -19,7 +19,7 @@ var willyWonka = {
 var mrRogers = {
 	imgsrc: "../RPG-Game/assets/images/mrrogers.jpg",
 	name: "Mr. Rogers",
-	attackPower: 50,
+	attackPower: 5,
 	health: 102,
 	chosen: false,
 	id: 'hero-mrrogers'
@@ -40,7 +40,7 @@ var imageHeight = '60%';
 var heroes = [barney, willyWonka, mrRogers, santa];
 var createdHeroes = [];
 var enemyHeroes = [];
-var previousDiv;
+var enemyHeroesDefeated = [];
 
 var chosenHero;
 var chosenEnemy;
@@ -49,6 +49,7 @@ var enemyChosen = false;
 var won = false;
 var defeated = false;
 
+var enemiesDefeated = 0;
 var statusRightCount = 0;
 var statusLeftCount = 0;
 
@@ -61,12 +62,22 @@ $(document).ready(function () {
 	createHeroObjects();
 
 	$('.hero').on("click", heroOnClick);
+	$(document).on("click", function () {
+		if (defeated === true) {
+			if (won === true) {
+				reset();
+				won = false;
+			}
+			won = true;
+		}
+
+	})
 
 });
 
+
 function heroOnClick() {
 
-	console.log(this.id);
 	if (!heroChosen) {
 		removeFourthColumn('#middle-row');
 		chosenHero = this;
@@ -84,44 +95,42 @@ function heroOnClick() {
 			$('#top-row').children().eq(index).append(current);
 		});
 
-		console.log(enemyHeroes);
 		heroChosen = true;
 
 	} else if (heroChosen && !enemyChosen) {
 
-		if (this != chosenHero) {
+		if (this != chosenHero && !enemyHeroesDefeated.includes(this)) {
 
 			$('#middle-row-center').append(this);
 			chosenEnemy = this;
 
-			console.log(previousDiv);
-
 			updateStatusText('right', 'Your target is <strong>' + $(chosenEnemy).attr('name') + "</strong>");
-			
+
 			updateStatusText('right', 'Click him to attack!');
 			enemyChosen = true;
 		}
 
 
-
 	} else if (heroChosen && enemyChosen) {
-		if (this !== chosenHero && this === chosenEnemy && won === false && defeated === false) {
+		if (this !== chosenHero && this === chosenEnemy && defeated === false) {
 			attackEnemy();
 		}
 
 	}
-
 
 }
 function clearStatusText(position) {
 	if (position === 'right') {
 		statusRightText = '';
 		$('#status-right').html(statusRightText);
+		statusRightCount = 0;
 	} else {
 		statusLeftText = '';
 		$('#status-right').html(statusLeftText);
+		statusLeftCount = 0;
 	}
 }
+
 function updateStatusText(position, text) {
 	if (position === 'right') {
 
@@ -180,33 +189,29 @@ function removeFourthColumn(row) {
 }
 
 function attackEnemy() {
-	var newHealth = $(chosenEnemy).attr('health') - $(chosenHero).attr('attack');
+	var newEnemyHealth = $(chosenEnemy).attr('health') - $(chosenHero).attr('attack');
+	var newHealth = $(chosenHero).attr('health') - $(chosenEnemy).attr('attack');
 
-	if (newHealth < 0) {
-		newHealth = 0;
+	if (newEnemyHealth < 0) {
+		newEnemyHealth = 0;
 	}
-	$(chosenEnemy).attr('health', newHealth);
-	console.log(newHealth);
+	$(chosenEnemy).attr('health', newEnemyHealth);
 
-	$('#health-' + $(chosenEnemy).attr('id')).text(newHealth);
-
-	newHealth = $(chosenHero).attr('health') - $(chosenEnemy).attr('attack');
+	$('#health-' + $(chosenEnemy).attr('id')).text(newEnemyHealth);
 
 	if (newHealth < 0) {
 		newHealth = 0;
+	} else {
+		$('#health-' + $(chosenHero).attr('id')).text(newHealth);
 	}
 
 	$(chosenHero).attr('health', newHealth);
-	console.log(newHealth);
-
-	$('#health-' + $(chosenHero).attr('id')).text(newHealth);
 
 	updateStatusText('left', "You hit " + $(chosenEnemy).attr('name') + " for <strong>" + $(chosenHero).attr('attack') + " damage!</strong> Remaining Health: <strong>" + $(chosenEnemy).attr('health') + "</strong>");
 
 	updateStatusText('left', $(chosenEnemy).attr('name') + " hit you for <strong>" + $(chosenEnemy).attr('attack') + " damage!</strong> You have <strong>" + $(chosenHero).attr('health') + " health</strong> left!");
-	if (parseInt($(chosenEnemy).attr('health')) === parseInt($(chosenHero).attr('health'))) {
-		tie();
-	} else if (parseInt($(chosenEnemy).attr('health')) < 1) {
+
+	if (parseInt($(chosenEnemy).attr('health')) < 1) {
 		win();
 	} else if (parseInt($(chosenHero).attr('health')) < 1) {
 		defeat();
@@ -214,30 +219,66 @@ function attackEnemy() {
 }
 
 function defeat() {
-	clearStatusText('left');
+	clearStatusText('right');
 	defeated = true;
 	$(chosenHero).css('background-color', 'black');
 	updateStatusText('left', 'You are defeated!');
 	updateStatusText('right', 'Game Over');
+	updateStatusText('right', 'Click anywhere to restart');
 }
 
 function win() {
 	clearStatusText('left');
-	won = true;
 	$(chosenEnemy).css('background-color', 'black');
 	updateStatusText('left', 'You are winner!');
 	updateStatusText('left', "<strong>" + $(chosenEnemy).attr('name') + "</strong> is defeat!");
+	nextEnemy();
 }
 
-function tie(){
+function nextEnemy() {
 	clearStatusText('right');
-	clearStatusText('left');
-	updateStatusText('left', 'You both died!');
-	updateStatusText('right', 'Game Over');
-	$(chosenEnemy).css('background-color', 'black');
-	$(chosenHero).css('background-color', 'black');
+	updateStatusText('right', "Click on your next enemy to fight!");
+	enemiesDefeated++;
+	if (enemiesDefeated > 2) {
+		gameWin();
+	}
+	else {
+		$('#top-row').children('div').each(function () {
+			if ($(this).children().length < 1) {
+				$(this).append(chosenEnemy);
+			}
+		});
+		enemyHeroesDefeated.push(chosenEnemy);
+		enemyChosen = false;
+
+	}
+
 }
 
+function gameWin() {
+	clearStatusText('right');
+	updateStatusText('right', "You Win! Click anywhere to play again.");
+	defeated = true;
+}
+
+function reset() {
+	addFourthColumn();
+	for (var i = 0; i < heroes.length; ++i) {
+		$('#middle-row').children().eq(i).append(createdHeroes[i]);
+
+		$(createdHeroes[i]).css('background-color', 'green');
+		$(createdHeroes[i]).attr('health', heroes[i].health);
+
+		$('#health-' + $(createdHeroes[i]).attr('id')).text(heroes[i].health);
+	}
+
+	enemyHeroes = [];
+	defeated = false;
+	heroChosen = false;
+	enemyHeroesDefeated = [];
+	enemiesDefeated = 0;
+	enemyChosen = false;
+}
 
 function createHeroObjects() {
 
@@ -247,8 +288,6 @@ function createHeroObjects() {
 		var heroImage = document.createElement('img');
 		var name = document.createElement('h4');
 		var health = document.createElement('h5');
-
-
 
 
 		$(name).text(heroes[i].name);
@@ -278,18 +317,6 @@ function createHeroObjects() {
 		createdHeroes.push(hero);
 
 		console.log(createdHeroes);
-		// $(hero).on("click", function () {
-		// 	if (!heroChosen) {
-		// 		console.log(hero.id);
-		// 		$(hero).attr('id', 'chosen-hero');
-		// 		$(hero).attr('chosen', true);
-		// 		chosenHero = hero;
-		// 		heroChosen = true;
-		// 		console.log(chosenHero.id);
-		// 		console.log( $(chosenHero).attr('name') );
-		// 		$('#bottom-row-center').append(chosenHero);
-		// 	}
-		// });
 
 		$('#middle-row').children().eq(i).append(hero);
 
