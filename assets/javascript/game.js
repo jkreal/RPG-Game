@@ -334,6 +334,7 @@ function reset() {
 
 		$(createdHeroes[i]).css('background-color', 'green');
 		$(createdHeroes[i]).attr('health', heroes[i].health);
+		$(createdHeroes[i]).attr('attack', heroes[i].attackPower);
 
 		$('#health-' + $(createdHeroes[i]).attr('id')).text(heroes[i].health);
 	}
@@ -341,6 +342,7 @@ function reset() {
 	clearStatusText('left');
 	updateStatusText('right', 'Welcome! To get started choose a hero to play');
 	updateStatusText('left', "It's really a puzzle game, though.");
+
 	enemyHeroes = [];
 	defeated = false;
 	heroChosen = false;
