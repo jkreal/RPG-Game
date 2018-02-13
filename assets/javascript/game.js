@@ -60,7 +60,8 @@ $(document).ready(function () {
 
 	addFourthColumn('#middle-row');
 	createHeroObjects();
-
+	updateStatusText('right', 'Welcome! To get started choose a hero to play');
+	updateStatusText('left', "It's really a puzzle game, though.");
 	$('.hero').on("click", heroOnClick);
 	$(document).on("click", function () {
 		if (defeated === true) {
@@ -95,12 +96,16 @@ function heroOnClick() {
 			$('#top-row').children().eq(index).append(current);
 		});
 
+		startingText();
 		heroChosen = true;
 
 	} else if (heroChosen && !enemyChosen) {
 
+		clearStatusText('right');
 		if (this != chosenHero && !enemyHeroesDefeated.includes(this)) {
 
+			if (enemiesDefeated > 0) {
+			}
 			$('#middle-row-center').append(this);
 			chosenEnemy = this;
 
@@ -108,6 +113,7 @@ function heroOnClick() {
 
 			updateStatusText('right', 'Click him to attack!');
 			enemyChosen = true;
+
 		}
 
 
@@ -115,9 +121,16 @@ function heroOnClick() {
 		if (this !== chosenHero && this === chosenEnemy && defeated === false) {
 			attackEnemy();
 		}
-
 	}
+}
 
+function startingText(){
+	clearStatusText('right');
+	updateStatusText('right', "Great! All other heroes are now enemies.");
+	updateStatusText('right', "Every character has their own health and attack power");
+	updateStatusText('right', "Your attack power increases with each enemy you defeat.");
+	updateStatusText('right', "Find the correct combination and defeat all enemies!");
+	updateStatusText('left', "Choose an enemy to fight");
 }
 function clearStatusText(position) {
 	if (position === 'right') {
@@ -139,7 +152,7 @@ function updateStatusText(position, text) {
 		$('#status-right').html(statusRightText);
 		console.log(statusRightText);
 
-		if (statusRightCount > 4) {
+		if (statusRightCount > 6) {
 			statusRightText = statusRightText.slice(statusRightText.indexOf(">") + 1);
 			console.log(statusRightText);
 			$('#status-right').html(statusRightText);
@@ -150,7 +163,7 @@ function updateStatusText(position, text) {
 		statusLeftText += '<br>>' + text;
 		$('#status-left').html(statusLeftText);
 
-		if (statusLeftCount > 4) {
+		if (statusLeftCount > 6) {
 			statusLeftText = statusLeftText.slice(statusLeftText.indexOf("r>") + 1);
 			$('#status-left').html(statusLeftText);
 		}
@@ -228,7 +241,6 @@ function defeat() {
 }
 
 function win() {
-	clearStatusText('left');
 	$(chosenEnemy).css('background-color', 'black');
 	updateStatusText('left', 'You are winner!');
 	updateStatusText('left', "<strong>" + $(chosenEnemy).attr('name') + "</strong> is defeat!");
@@ -271,7 +283,10 @@ function reset() {
 
 		$('#health-' + $(createdHeroes[i]).attr('id')).text(heroes[i].health);
 	}
-
+	clearStatusText('right');
+	clearStatusText('left');
+	updateStatusText('right', 'Welcome! To get started choose a hero to play');
+	updateStatusText('left', "It's really a puzzle game, though.");
 	enemyHeroes = [];
 	defeated = false;
 	heroChosen = false;
@@ -279,6 +294,7 @@ function reset() {
 	enemiesDefeated = 0;
 	enemyChosen = false;
 }
+
 
 function createHeroObjects() {
 
@@ -313,6 +329,7 @@ function createHeroObjects() {
 		$(hero).css('width', imageWidth);
 		$(hero).css('border', '2px solid black');
 		$(hero).addClass('hero');
+		$(hero).addClass('container');
 		console.log($(hero).attr('name'));
 		createdHeroes.push(hero);
 
